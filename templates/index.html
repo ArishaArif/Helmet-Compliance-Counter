@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Helmet Compliance Counter</title>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: #0b1220;
+            color: #e8edf5;
+            font-family: Arial, sans-serif;
+        }
+
+        header {
+            height: 65px;
+            background: #111c2e;
+            border-bottom: 1px solid #26364d;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+        }
+
+        header h2 { font-size: 19px; margin: 0; }
+
+        .model-info {
+            color: #9eacc0;
+            font-size: 12px;
+        }
+
+        .live {
+            color: #36d399;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        main { padding: 22px; }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: #152238;
+            border: 1px solid #26364d;
+            border-radius: 9px;
+            padding: 16px;
+        }
+
+        .card p {
+            color: #9eacc0;
+            font-size: 12px;
+            margin: 0 0 12px;
+        }
+
+        .card h2 {
+            font-size: 27px;
+            margin: 0;
+        }
+
+        .green { color: #36d399; }
+        .red { color: #ff626b; }
+        .blue { color: #65aaff; }
+
+        .layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 300px;
+            gap: 18px;
+        }
+
+        .panel {
+            background: #152238;
+            border: 1px solid #26364d;
+            border-radius: 9px;
+            padding: 17px;
+            min-width: 0;
+        }
+
+        .panel h3 {
+            font-size: 15px;
+            margin: 0 0 15px;
+        }
+
+        .video-area {
+            background: #080e18;
+            border-radius: 7px;
+            min-height: 350px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        #video {
+            width: 100%;
+            height: auto;
+            display: none;
+        }
+
+        #placeholder {
+            color: #718096;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .upload {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        input[type=file] {
+            max-width: 250px;
+            color: #aebbd0;
+        }
+
+        button {
+            background: #2878df;
+            color: white;
+            border: 0;
+            padding: 9px 17px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover { background: #1c65c2; }
+
+        #message {
+            color: #9eacc0;
+            font-size: 12px;
+            margin-bottom: 12px;
+        }
+
+        .rider {
+            padding: 12px 0;
+            border-bottom: 1px solid #293950;
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            font-size: 13px;
+        }
+
+        .rider:last-child { border: 0; }
+
+        .status {
+            font-weight: bold;
+        }
+
+        .unknown { color: #9eacc0; }
+
+        @media (max-width: 850px) {
+            .stats { grid-template-columns: repeat(2, 1fr); }
+            .layout { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <div>
+        <h2>Helmet Compliance Counter</h2>
+        <div class="model-info">YOLOv8n &nbsp;|&nbsp; ByteTrack</div>
+    </div>
+    <div class="live">● LOCAL DEMO</div>
+</header>
+
+<main>
+
+    <section class="stats">
+        <div class="card">
+            <p>Unique Riders Detected</p>
+            <h2 id="total" class="blue">0</h2>
+        </div>
+
+        <div class="card">
+            <p>Currently Tracked</p>
+            <h2 id="current">0</h2>
+        </div>
+
+        <div class="card">
+            <p>Helmet Compliant</p>
+            <h2 id="helmet" class="green">0</h2>
+        </div>
+
+        <div class="card">
+            <p>No Helmet</p>
+            <h2 id="nohelmet" class="red">0</h2>
+        </div>
+
+        <div class="card">
+            <p>Processing Time</p>
+            <h2 id="elapsed">0s</h2>
+        </div>
+    </section>
+
+    <section class="layout">
+
+        <div class="panel">
+            <h3>Video Detection Feed</h3>
+
+            <form class="upload" id="uploadForm">
+                <input type="file" name="video" accept="video/*" required>
+                <button type="submit">Upload & Start</button>
+            </form>
+
+            <div id="message">Select a road video to begin detection.</div>
+
+            <div class="video-area">
+                <div id="placeholder">
+                    <h3>Video Feed</h3>
+                    <p>Your detection stream will appear here.</p>
+                </div>
+                <img id="video" alt="Live detection feed">
+            </div>
+        </div>
+
+        <div class="panel">
+            <h3>Tracked Riders</h3>
+            <div id="riders">
+                <p style="color:#718096;font-size:13px">
+                    No riders detected yet.
+                </p>
+            </div>
+        </div>
+
+    </section>
+</main>
+
+<script>
+    const form = document.getElementById("uploadForm");
+    const video = document.getElementById("video");
+    const placeholder = document.getElementById("placeholder");
+    const message = document.getElementById("message");
+
+    form.addEventListener("submit", async function(event) {
+        event.preventDefault();
+
+        const formData = new FormData(form);
+        message.textContent = "Uploading video...";
+
+        try {
+            const response = await fetch("/upload", {
+                method: "POST",
+                body: formData
+            });
+
+            const result = await response.text();
+
+            if (!response.ok) {
+                message.textContent = result;
+                return;
+            }
+
+            message.textContent = "Detection started.";
+            placeholder.style.display = "none";
+            video.style.display = "block";
+            video.src = "/video_feed?t=" + Date.now();
+
+        } catch (error) {
+            message.textContent = "Upload failed: " + error.message;
+        }
+    });
+
+    async function updateStats() {
+        try {
+            const response = await fetch("/stats");
+            const data = await response.json();
+
+            document.getElementById("total").textContent = data.total;
+            document.getElementById("current").textContent = data.current;
+            document.getElementById("helmet").textContent = data.helmet;
+            document.getElementById("nohelmet").textContent = data.no_helmet;
+            document.getElementById("elapsed").textContent =
+                (data.elapsed || 0) + "s";
+
+            const riders = document.getElementById("riders");
+
+            if (!data.riders || data.riders.length === 0) {
+                riders.innerHTML =
+                    '<p style="color:#718096;font-size:13px">No riders detected yet.</p>';
+                return;
+            }
+
+            riders.innerHTML = data.riders.map(rider => {
+                let color = "unknown";
+
+                if (rider.status === "Helmet") color = "green";
+                if (rider.status === "NoHelmet") color = "red";
+
+                return `
+                    <div class="rider">
+                        <span>Rider #${rider.id}</span>
+                        <span class="status ${color}">
+                            ${rider.status}
+                            ${rider.confidence ? rider.confidence + "%" : ""}
+                        </span>
+                    </div>
+                `;
+            }).join("");
+
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    setInterval(updateStats, 1000);
+</script>
+
+</body>
+</html>

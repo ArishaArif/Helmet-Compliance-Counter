@@ -1,0 +1,46 @@
+# Helmet Compliance Counter — Data Audit
+
+## Dataset 1: EdgeVision
+
+- Dataset name: EdgeVision Dataset
+- Source: Mendeley Data
+- Dataset version: V1
+- Images: 2,392 JPEG images
+- Total annotations: 8,275
+- Average image resolution: 1154 × 1411 pixels (width × height)
+- Annotation formats: YOLO, Pascal VOC XML, COCO
+- Selected annotation format: YOLO
+- YOLO class IDs:
+  - 0 — BikeWithRider
+  - 1 — NoHelmet
+  - 2 — Helmet
+- Licence: Creative Commons Attribution 4.0 International (CC BY 4.0)
+- Data downloaded: Wednesday, October 21, 2026
+- Notes: Dataset contains Images and Labels folders, plus README and LICENSE files. YOLO labels are stored in individual .txt files.
+## Class Distribution Analysis
+
+Total images: 2,392
+Total annotations: 8,275
+
+| Class ID | Class Name    | Number of Instances | Percentage |
+| 0        | BikeWithRider | 3,793               | 45.8%      |
+| 1        | NoHelmet      | 2,810               | 34.0%      |
+| 2        | Helmet        | 1,672               | 20.2%      |
+|          | Total         | 8,275               | 100%       |
+
+### Observations
+
+- BikeWithRider is the most frequently annotated class, accounting for 45.8% of all annotations.
+- Helmet is the least frequently annotated class, accounting for 20.2% of all annotations.
+- The class distribution is uneven, so we should monitor per-class precision and recall during model evaluation.
+- These percentages represent the distribution of annotated objects, not the percentage of images containing each class.
+- Class imbalance alone does not establish that resampling or other balancing techniques are necessary.
+
+### Initial Data Quality Checks
+
+- Total images found: 2,392
+- Total YOLO label files found: 2,392
+- Images without matching labels: 0
+- Labels without matching images: 0
+- Sampled images visually inspected: Bounding boxes and class labels appeared correct in the samples reviewed.
+- Result: Initial checks passed. Further validation is still required.

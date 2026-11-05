@@ -1,0 +1,32 @@
+
+# Python environment
+.venv/
+__pycache__/
+*.py[cod]
+
+# Dataset files
+data/
+cleaned_dataset/
+dataset_split/
+
+# Model weights
+*.pt
+*.onnx
+
+# Training outputs
+runs/
+
+# Uploaded media
+uploads/
+*.mp4
+*.avi
+*.mov
+*.mkv
+
+# Temporary files
+*.log
+.DS_Store
+Thumbs.db
+
+# Local configuration
+.env
