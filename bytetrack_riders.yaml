@@ -1,0 +1,7 @@
+tracker_type: bytetrack
+track_high_thresh: 0.30   # detections above this start/extend tracks
+track_low_thresh: 0.10    # weaker detections can still keep an existing track alive
+new_track_thresh: 0.40    # only confident detections create a NEW rider ID
+track_buffer: 60          # frames a lost rider is remembered before the ID is retired
+match_thresh: 0.85
+fuse_score: True
