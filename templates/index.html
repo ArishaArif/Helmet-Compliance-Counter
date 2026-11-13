@@ -1,319 +1,194 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Helmet Compliance Counter</title>
-
-    <style>
-        * { box-sizing: border-box; }
-
-        body {
-            margin: 0;
-            background: #0b1220;
-            color: #e8edf5;
-            font-family: Arial, sans-serif;
-        }
-
-        header {
-            height: 65px;
-            background: #111c2e;
-            border-bottom: 1px solid #26364d;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 28px;
-        }
-
-        header h2 { font-size: 19px; margin: 0; }
-
-        .model-info {
-            color: #9eacc0;
-            font-size: 12px;
-        }
-
-        .live {
-            color: #36d399;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        main { padding: 22px; }
-
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 14px;
-            margin-bottom: 20px;
-        }
-
-        .card {
-            background: #152238;
-            border: 1px solid #26364d;
-            border-radius: 9px;
-            padding: 16px;
-        }
-
-        .card p {
-            color: #9eacc0;
-            font-size: 12px;
-            margin: 0 0 12px;
-        }
-
-        .card h2 {
-            font-size: 27px;
-            margin: 0;
-        }
-
-        .green { color: #36d399; }
-        .red { color: #ff626b; }
-        .blue { color: #65aaff; }
-
-        .layout {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) 300px;
-            gap: 18px;
-        }
-
-        .panel {
-            background: #152238;
-            border: 1px solid #26364d;
-            border-radius: 9px;
-            padding: 17px;
-            min-width: 0;
-        }
-
-        .panel h3 {
-            font-size: 15px;
-            margin: 0 0 15px;
-        }
-
-        .video-area {
-            background: #080e18;
-            border-radius: 7px;
-            min-height: 350px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-
-        #video {
-            width: 100%;
-            height: auto;
-            display: none;
-        }
-
-        #placeholder {
-            color: #718096;
-            text-align: center;
-            padding: 30px;
-        }
-
-        .upload {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 16px;
-            flex-wrap: wrap;
-        }
-
-        input[type=file] {
-            max-width: 250px;
-            color: #aebbd0;
-        }
-
-        button {
-            background: #2878df;
-            color: white;
-            border: 0;
-            padding: 9px 17px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        button:hover { background: #1c65c2; }
-
-        #message {
-            color: #9eacc0;
-            font-size: 12px;
-            margin-bottom: 12px;
-        }
-
-        .rider {
-            padding: 12px 0;
-            border-bottom: 1px solid #293950;
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-            font-size: 13px;
-        }
-
-        .rider:last-child { border: 0; }
-
-        .status {
-            font-weight: bold;
-        }
-
-        .unknown { color: #9eacc0; }
-
-        @media (max-width: 850px) {
-            .stats { grid-template-columns: repeat(2, 1fr); }
-            .layout { grid-template-columns: 1fr; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="csrf" content="{{ csrf }}">
+<title>Helmet Compliance Monitor</title>
+<link rel="icon" href="/static/logo.svg" type="image/svg+xml">
+<style>
+  :root { --bg:#0b0e13; --panel:#11161d; --line:#262e3b; --text:#e7e9ee; --muted:#8b95a7;
+          --amber:#f2b134; --ok:#3fb68b; --bad:#ff5a4f; --blue:#3b9cff; }
+  * { box-sizing:border-box; }
+  html, body { height:100%; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:Bahnschrift, "Segoe UI", system-ui, sans-serif; display:flex; flex-direction:column; }
+  header { display:flex; justify-content:space-between; align-items:center; padding:10px 20px; border-bottom:2px solid var(--amber); }
+  header h1 { margin:0; font-size:20px; font-weight:700; color:var(--amber); letter-spacing:.3px; }
+  header form { margin:0; display:flex; gap:10px; align-items:center; } header span { color:var(--muted); font-size:13px; }
+  .app { flex:1; min-height:0; display:grid; grid-template-columns:minmax(0,1fr) 350px; }
+  .left { display:flex; flex-direction:column; min-height:0; border-right:1px solid var(--line); }
+  #viewer { position:relative; flex:1; min-height:320px; background:#06080b; display:grid; place-items:center; overflow:hidden; }
+  #stage { width:100%; height:100%; display:grid; place-items:center; }
+  #stage img { max-width:100%; max-height:100%; object-fit:contain; }
+  #alert { position:absolute; top:0; left:0; right:0; background:var(--bad); font-weight:700; padding:6px 14px; display:none; }
+  #empty { position:absolute; inset:0; display:grid; place-content:center; text-align:center; gap:14px; }
+  #empty p { margin:0; color:var(--muted); } #empty div { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+  #thumbs { display:flex; gap:6px; padding:6px 10px; background:#0d1117; overflow-x:auto; }
+  #thumbs:empty { display:none; }
+  #thumbs button { padding:0; border:2px solid transparent; background:none; border-radius:4px; } #thumbs button[aria-pressed=true] { border-color:var(--amber); }
+  #thumbs img { height:48px; display:block; border-radius:3px; }
+  .tools { display:flex; gap:10px; flex-wrap:wrap; align-items:center; padding:10px 14px; background:var(--panel); border-top:1px solid var(--line); }
+  .tools .sp { flex:1; }
+  button, select { font:inherit; font-size:14px; padding:8px 14px; border-radius:5px; border:1px solid var(--line); background:#1b2230; color:var(--text); cursor:pointer; }
+  button.primary { background:var(--amber); color:#1a1405; border-color:var(--amber); font-weight:700; }
+  button:disabled { opacity:.4; cursor:not-allowed; }
+  button:focus-visible, select:focus-visible { outline:2px solid var(--amber); outline-offset:1px; }
+  #msg { padding:0 14px 8px; background:var(--panel); font-size:13px; color:var(--muted); min-height:24px; } #msg.error { color:#ff8a82; }
+  .side { overflow-y:auto; padding:14px; background:var(--panel); }
+  .side h2 { font-size:13px; color:var(--amber); margin:16px 0 8px; font-weight:700; display:flex; justify-content:space-between; }
+  .side h2:first-child { margin-top:0; } .side h2 em { font-style:normal; color:var(--muted); font-weight:400; }
+  .state { font-size:12px; color:var(--muted); } .state i { display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--muted); margin-right:5px; }
+  .state.live { color:var(--amber); } .state.live i { background:var(--amber); }
+  .tiles { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .tile { background:#0b0f15; border-top:3px solid var(--blue); padding:8px 10px; }
+  .tile.g { border-color:var(--ok); } .tile.r { border-color:var(--bad); } .tile.y { border-color:var(--amber); }
+  .tile p { margin:0; font-size:11px; color:var(--muted); } .tile b { font-size:30px; font-weight:600; }
+  .tile.g b { color:var(--ok); } .tile.r b { color:var(--bad); }
+  .split { display:flex; height:6px; background:#222a36; margin:8px 0; } .split i { display:block; transition:width .4s; }
+  .strip { display:flex; flex-wrap:wrap; gap:3px; min-height:12px; } .strip i { width:11px; height:11px; } .strip .g { background:var(--ok); } .strip .r { background:var(--bad); }
+  #zoom { height:150px; background:#06080b; border:1px solid var(--line); display:grid; place-items:center; } #zoom img { max-height:100%; max-width:100%; }
+  #zoomTag { margin-top:6px; padding:6px 10px; font-weight:700; text-align:center; background:#1b2230; }
+  .res { display:flex; gap:10px; align-items:center; padding:6px 8px; margin-bottom:6px; background:#0b0f15; border-left:4px solid var(--ok); }
+  .res.r { border-color:var(--bad); } .res img { width:40px; height:48px; object-fit:cover; background:#000; }
+  .res b { display:block; font-size:13px; } .res .g { color:var(--ok); } .res .rr { color:var(--bad); }
+  .res small { margin-left:auto; color:var(--muted); font-size:12px; }
+  .none { color:var(--muted); font-size:13px; margin:0; }
+  @media (max-width:950px) { .app { grid-template-columns:1fr; } .left { border-right:0; } }
+</style>
 </head>
-
 <body>
-
 <header>
-    <div>
-        <h2>Helmet Compliance Counter</h2>
-        <div class="model-info">YOLOv8n &nbsp;|&nbsp; ByteTrack</div>
-    </div>
-    <div class="live">● LOCAL DEMO</div>
+  <h1 style="display:flex;align-items:center;gap:10px"><img src="/static/logo.svg" alt="" width="34" height="34">HELMET COMPLIANCE MONITOR</h1>
+  <form method="post" action="/logout"><input type="hidden" name="csrf" value="{{ csrf }}"><span>{{ email }}</span><button type="submit">Sign out</button></form>
 </header>
 
-<main>
+<div class="app">
+  <section class="left">
+    <div id="viewer">
+      <div id="alert" role="alert"></div>
+      <div id="stage"></div>
+      <div id="empty">
+        <p>No media yet. Add pictures or a video to start detecting.</p>
+        <div><button class="primary" data-pick="img">Upload pictures</button><button class="primary" data-pick="vid">Upload video</button></div>
+      </div>
+    </div>
+    <div id="thumbs"></div>
+    <div id="msg" role="status">JPG or PNG pictures (up to 20), or one video up to 600 MB.</div>
+    <div class="tools">
+      <button data-pick="img">Upload pictures</button><button data-pick="vid">Upload video</button>
+      <select id="hist" aria-label="Past analyses"><option value="">Past analyses</option></select>
+      <span class="sp"></span>
+      <select id="fmt" aria-label="Export format"><option value="pdf">PDF</option><option value="csv">CSV</option><option value="xml">XML</option><option value="txt">TXT</option><option value="json">JSON</option></select>
+      <select id="cls" aria-label="Classes to include"><option value="all">All people</option><option value="Helmet">Helmet only</option><option value="NoHelmet">No helmet only</option></select>
+      <button class="primary" id="export" disabled>Export</button>
+    </div>
+    <input id="imgIn" type="file" accept="image/jpeg,image/png" multiple hidden>
+    <input id="vidIn" type="file" accept="video/mp4,video/x-msvideo,video/quicktime,video/x-matroska" hidden>
+  </section>
 
-    <section class="stats">
-        <div class="card">
-            <p>Unique Riders Detected</p>
-            <h2 id="total" class="blue">0</h2>
-        </div>
-
-        <div class="card">
-            <p>Currently Tracked</p>
-            <h2 id="current">0</h2>
-        </div>
-
-        <div class="card">
-            <p>Helmet Compliant</p>
-            <h2 id="helmet" class="green">0</h2>
-        </div>
-
-        <div class="card">
-            <p>No Helmet</p>
-            <h2 id="nohelmet" class="red">0</h2>
-        </div>
-
-        <div class="card">
-            <p>Processing Time</p>
-            <h2 id="elapsed">0s</h2>
-        </div>
-    </section>
-
-    <section class="layout">
-
-        <div class="panel">
-            <h3>Video Detection Feed</h3>
-
-            <form class="upload" id="uploadForm">
-                <input type="file" name="video" accept="video/*" required>
-                <button type="submit">Upload & Start</button>
-            </form>
-
-            <div id="message">Select a road video to begin detection.</div>
-
-            <div class="video-area">
-                <div id="placeholder">
-                    <h3>Video Feed</h3>
-                    <p>Your detection stream will appear here.</p>
-                </div>
-                <img id="video" alt="Live detection feed">
-            </div>
-        </div>
-
-        <div class="panel">
-            <h3>Tracked Riders</h3>
-            <div id="riders">
-                <p style="color:#718096;font-size:13px">
-                    No riders detected yet.
-                </p>
-            </div>
-        </div>
-
-    </section>
-</main>
+  <aside class="side">
+    <h2>COUNTS <span class="state" id="state"><i></i><span>READY</span></span></h2>
+    <div class="tiles">
+      <div class="tile"><p>TOTAL PEOPLE</p><b id="total">0</b></div>
+      <div class="tile y"><p>IN FRAME</p><b id="inframe">0</b></div>
+      <div class="tile g"><p>HELMET</p><b id="helmet">0</b></div>
+      <div class="tile r"><p>NO HELMET</p><b id="nohelmet">0</b></div>
+    </div>
+    <h2>COMPLIANCE <em id="comp">-</em></h2>
+    <div class="split" aria-hidden="true"><i id="sOk" style="background:var(--ok);width:0"></i><i id="sBad" style="background:var(--bad);width:0"></i></div>
+    <div class="strip" id="strip" aria-hidden="true"></div>
+    <h2>LIVE ZOOM <em id="zoomMeta"></em></h2>
+    <div id="zoom"><p class="none">Latest person appears here.</p></div>
+    <div id="zoomTag" hidden></div>
+    <h2>RECENT RESULTS</h2>
+    <div id="recent"><p class="none">Nothing yet.</p></div>
+  </aside>
+</div>
 
 <script>
-    const form = document.getElementById("uploadForm");
-    const video = document.getElementById("video");
-    const placeholder = document.getElementById("placeholder");
-    const message = document.getElementById("message");
+const csrf = document.querySelector('meta[name=csrf]').content;
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let jobId = null, timer = null, last = null, stageKey = '', imgIdx = 0;
+const mmss = t => Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0');
+function msg(t, err) { $('msg').textContent = t; $('msg').className = err ? 'error' : ''; }
 
-    form.addEventListener("submit", async function(event) {
-        event.preventDefault();
+document.querySelectorAll('[data-pick]').forEach(b => b.addEventListener('click', () => $(b.dataset.pick === 'img' ? 'imgIn' : 'vidIn').click()));
+['imgIn', 'vidIn'].forEach(id => $(id).addEventListener('change', e => { if (e.target.files.length) send(e.target.files); e.target.value = ''; }));
 
-        const formData = new FormData(form);
-        message.textContent = "Uploading video...";
+async function send(files) {
+  const fd = new FormData(); [...files].forEach(f => fd.append('files', f));
+  msg('Uploading and checking files...');
+  let d = {}, ok = false;
+  try { const r = await fetch('/api/upload', {method:'POST', headers:{'X-CSRF':csrf}, body:fd}); ok = r.ok; d = await r.json(); }
+  catch (_) { d = {error:'Upload failed. Check the file size and try again.'}; }
+  if (!ok) return msg(d.error || 'Upload failed.', true);
+  msg('Analysing...'); imgIdx = 0; stageKey = ''; track(d.job_id);
+}
 
-        try {
-            const response = await fetch("/upload", {
-                method: "POST",
-                body: formData
-            });
+function track(id) { jobId = id; stageKey = ''; imgIdx = 0; clearInterval(timer); poll(); timer = setInterval(poll, 700); }
 
-            const result = await response.text();
+async function poll() {
+  const r = await fetch('/api/jobs/' + jobId); if (!r.ok) return;
+  last = await r.json(); render();
+  const s = last.job.status;
+  if (s !== 'running') {
+    clearInterval(timer); loadHistory();
+    msg(s === 'done' ? 'Analysis complete.' : (last.job.error || 'Processing failed.'), s === 'error');
+  }
+}
 
-            if (!response.ok) {
-                message.textContent = result;
-                return;
-            }
+function render() {
+  const c = last.counts, j = last.job, running = j.status === 'running';
+  $('empty').style.display = 'none';
+  $('total').textContent = c.total; $('helmet').textContent = c.helmet; $('nohelmet').textContent = c.no_helmet;
+  $('inframe').textContent = running ? last.in_frame : 0;
+  $('comp').textContent = c.compliance === null ? '-' : c.compliance + '%';
+  $('sOk').style.width = c.total ? (100 * c.helmet / c.total) + '%' : '0';
+  $('sBad').style.width = c.total ? (100 * c.no_helmet / c.total) + '%' : '0';
+  $('state').className = 'state' + (running ? ' live' : ''); $('state').lastChild.textContent = running ? 'LIVE ' + (j.progress || 0) + '%' : (j.status === 'done' ? 'DONE' : 'ERROR');
+  $('export').disabled = running || j.status !== 'done';
+  const al = $('alert'); al.style.display = c.no_helmet ? 'block' : 'none'; al.textContent = 'ALERT: NO HELMET x' + c.no_helmet;
 
-            message.textContent = "Detection started.";
-            placeholder.style.display = "none";
-            video.style.display = "block";
-            video.src = "/video_feed?t=" + Date.now();
+  let key, html = '';
+  if (j.kind === 'video') {
+    key = (running ? 'S' : 'P') + jobId;
+    html = running ? `<img alt="Live detection" src="/api/jobs/${jobId}/stream">` : `<img alt="Final frame" src="/media/${jobId}/preview.jpg?t=${Date.now()}">`;
+    $('thumbs').innerHTML = '';
+  } else {
+    const a = last.annotated; key = 'I' + jobId + imgIdx;
+    html = a.length ? `<img alt="Annotated result" src="/media/${jobId}/${esc(a[imgIdx])}">` : '';
+    $('thumbs').innerHTML = a.length > 1 ? a.map((n, i) => `<button data-i="${i}" aria-pressed="${i === imgIdx}"><img alt="Image ${i + 1}" src="/media/${jobId}/${esc(n)}"></button>`).join('') : '';
+    $('thumbs').querySelectorAll('button').forEach(b => b.onclick = () => { imgIdx = +b.dataset.i; render(); });
+  }
+  if (key !== stageKey) { stageKey = key; $('stage').innerHTML = html; }
 
-        } catch (error) {
-            message.textContent = "Upload failed: " + error.message;
-        }
-    });
+  const cls = $('cls').value, dets = last.detections.filter(d => cls === 'all' || d.label === cls);
+  $('strip').innerHTML = last.detections.slice(-60).map(d => `<i class="${d.label === 'Helmet' ? 'g' : 'r'}"></i>`).join('');
+  const lastD = dets[dets.length - 1];
+  if (lastD) {
+    $('zoom').innerHTML = `<img alt="Latest person" src="/media/${jobId}/crops/${esc(lastD.crop)}?t=${lastD.track_id}">`;
+    $('zoomTag').hidden = false; $('zoomTag').textContent = lastD.label === 'Helmet' ? 'HELMET' : 'NO HELMET';
+    $('zoomTag').style.background = lastD.label === 'Helmet' ? 'var(--ok)' : 'var(--bad)';
+    $('zoomMeta').textContent = lastD.track_id !== null ? 'track #' + lastD.track_id : '';
+  }
+  $('recent').innerHTML = dets.length ? dets.slice(-40).reverse().map(d => `
+    <div class="res ${d.label === 'Helmet' ? '' : 'r'}"><img alt="" src="/media/${jobId}/crops/${esc(d.crop)}">
+      <div><b class="${d.label === 'Helmet' ? 'g' : 'rr'}">${d.label === 'Helmet' ? 'HELMET' : 'NO HELMET'} ${Math.round(d.confidence * 100)}%</b>
+      <span style="font-size:12px;color:var(--muted)">${d.track_id !== null ? 'Person #' + d.track_id : esc(d.source)}</span></div>
+      <small>${d.time_sec !== null ? mmss(d.time_sec) : ''}</small></div>`).join('') : '<p class="none">Nothing yet.</p>';
+}
 
-    async function updateStats() {
-        try {
-            const response = await fetch("/stats");
-            const data = await response.json();
+$('cls').addEventListener('change', () => last && render());
+$('export').addEventListener('click', () => { location.href = `/api/jobs/${jobId}/export?format=${$('fmt').value}&cls=${$('cls').value}`; });
+$('hist').addEventListener('change', e => { if (e.target.value) track(e.target.value); });
 
-            document.getElementById("total").textContent = data.total;
-            document.getElementById("current").textContent = data.current;
-            document.getElementById("helmet").textContent = data.helmet;
-            document.getElementById("nohelmet").textContent = data.no_helmet;
-            document.getElementById("elapsed").textContent =
-                (data.elapsed || 0) + "s";
-
-            const riders = document.getElementById("riders");
-
-            if (!data.riders || data.riders.length === 0) {
-                riders.innerHTML =
-                    '<p style="color:#718096;font-size:13px">No riders detected yet.</p>';
-                return;
-            }
-
-            riders.innerHTML = data.riders.map(rider => {
-                let color = "unknown";
-
-                if (rider.status === "Helmet") color = "green";
-                if (rider.status === "NoHelmet") color = "red";
-
-                return `
-                    <div class="rider">
-                        <span>Rider #${rider.id}</span>
-                        <span class="status ${color}">
-                            ${rider.status}
-                            ${rider.confidence ? rider.confidence + "%" : ""}
-                        </span>
-                    </div>
-                `;
-            }).join("");
-
-        } catch (error) {
-            console.log(error);
-        }
-    }
-
-    setInterval(updateStats, 1000);
+async function loadHistory() {
+  const r = await fetch('/api/jobs'); if (!r.ok) return;
+  const jobs = await r.json();
+  $('hist').innerHTML = '<option value="">Past analyses</option>' + jobs.map(j => `<option value="${esc(j.id)}">${esc(j.filename)} (${esc(j.created.slice(0, 16))})</option>`).join('');
+}
+loadHistory();
 </script>
-
 </body>
 </html>

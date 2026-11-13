@@ -1,0 +1,9 @@
+flask
+ultralytics
+opencv-python
+pillow
+numpy
+reportlab
+python-dotenv
+psycopg[binary]
+psycopg_pool

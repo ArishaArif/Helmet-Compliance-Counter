@@ -1,32 +1,35 @@
-
-# Python environment
+# Python
 .venv/
 __pycache__/
 *.py[cod]
 
-# Dataset files
+# Secrets and local database
+.env
+*.db
+
+# Datasets
 data/
 cleaned_dataset/
 dataset_split/
-
-# Model weights
-*.pt
-*.onnx
+fine_tune_dataset/
+video_dataset_cleaned/
+myanmar_test_videos/
 
 # Training outputs
 runs/
 
-# Uploaded media
+# Uploaded and generated media
 uploads/
-*.mp4
-*.avi
-*.mov
-*.mkv
+media/
+cctv_evaluation/images/
+cctv_evaluation/labels/
+
+# Model weights: keep only the two deployment checkpoints
+*.pt
+*.onnx
+!models/*.pt
 
 # Temporary files
 *.log
 .DS_Store
 Thumbs.db
-
-# Local configuration
-.env
