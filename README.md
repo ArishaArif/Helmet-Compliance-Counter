@@ -1,62 +1,113 @@
 # Helmet Compliance Counter
 
-A computer vision-based system designed to detect motorcycle riders, identify helmet compliance, track individual riders, and generate automated traffic analytics.
+A computer-vision application for detecting helmet compliance in motorcycle traffic images and videos. The system uses YOLOv8 for object detection, ByteTrack for video tracking, and Flask for its web interface and processing backend.
 
 ## Project Overview
 
-Helmet Compliance Counter aims to improve motorcycle helmet compliance monitoring through computer vision and object detection. The system uses a custom-trained YOLOv8 model to detect motorcycles with riders, helmet usage, and helmet violations in traffic footage.
+Helmet Compliance Counter identifies two helmet-status classes:
 
-The project also incorporates multi-object tracking to assign consistent IDs to detected motorcycle riders and support unique rider counting.
+- **Helmet** — helmet detected.
+- **NoHelmet** — no-helmet detection.
 
-## Technologies
+The underlying models also contain a `BikeWithRider` class, but the application filters its displayed and counted results to Helmet and NoHelmet.
+
+The application supports individual and multiple image uploads, video processing, annotated results, tracking IDs, compliance summaries, and downloadable reports.
+
+## Technology Stack
 
 - Python
-- YOLOv8 (Ultralytics)
+- YOLOv8 / Ultralytics
 - OpenCV
 - ByteTrack
 - Flask
+- SQLite / PostgreSQL (Neon)
 - HTML, CSS and JavaScript
+- ReportLab for PDF exports
 
-## Current Progress
+## Model Checkpoints
 
-- Dataset inspection and annotation auditing
-- Dataset cleaning and validation
-- Training, validation and testing dataset preparation
-- Custom YOLOv8n model training
-- Model evaluation using precision, recall, mAP50 and mAP50-95
-- Initial Flask-based video detection dashboard
-- Initial ByteTrack integration
+Two trained checkpoints are included in the `models/` directory:
 
-## Planned Development
+| File | Purpose |
+|---|---|
+| `cctv_finetuned_best.pt` | Current deployment model, fine-tuned for CCTV footage |
+| `edgevision_backup_best.pt` | Backup model trained on the EdgeVision dataset |
 
-- Incorporation of additional traffic video data
-- Improved detection of motorcycles with riders
-- Reduction of false positives involving cars, bicycles and distant objects
-- More reliable rider tracking and unique counting
-- Cumulative helmet compliance and violation analytics
-- Multiple-image upload and image-by-image analysis
-- Video and image export functionality
-- CSV and Excel reporting
-- Backend security and upload validation
+The application uses environment variables to select the model:
+
+```env
+IMAGE_MODEL=models/cctv_finetuned_best.pt
+VIDEO_MODEL=models/cctv_finetuned_best.pt
+```
+
+The fine-tuned checkpoint is the current active model. The EdgeVision checkpoint is retained as a backup.
+
+## Model Evaluation
+
+Results below come from separate evaluation datasets and should not be compared as though they were the same test.
+
+### EdgeVision held-out test set
+
+Original EdgeVision model:
+
+| Metric | Result |
+|---|---:|
+| Precision | 93.8% |
+| Recall | 86.5% |
+| mAP50 | 93.0% |
+| mAP50-95 | 66.3% |
+
+Fine-tuned model on the same EdgeVision test set:
+
+| Metric | Result |
+|---|---:|
+| Precision | 94.7% |
+| Recall | 82.3% |
+| mAP50 | 90.6% |
+| mAP50-95 | 62.5% |
+
+### CCTV holdout evaluation
+
+The fine-tuned model was evaluated on 101 held-out CCTV images at 640-pixel inference size.
+
+| Metric | Result |
+|---|---:|
+| Precision | 61.4% |
+| Recall | 61.7% |
+| mAP50 | 69.5% |
+| mAP50-95 | 35.4% |
+
+Per-class CCTV mAP50:
+
+| Class | mAP50 |
+|---|---:|
+| BikeWithRider | 94.7% |
+| NoHelmet | 63.5% |
+| Helmet | 50.2% |
+
+CCTV performance has improved substantially compared with the original EdgeVision model, but helmet-status detection still requires improvement. These results are not a claim that the system has achieved 80–95% precision on CCTV footage.
+
+For further details, see [the technical report](documentation/PROJECT_TECHNICAL_REPORT.md).
+
+## Application Features
+
+- Login system with administrator and analyst roles.
+- Password hashing and login-attempt throttling.
+- CSRF protection and security response headers.
+- Upload of up to 20 JPEG/PNG images in one request.
+- Single-video upload (MP4, AVI, MOV or MKV).
+- Image and video inference using YOLOv8.
+- ByteTrack tracking for video processing.
+- Track-level majority-vote helmet classification.
+- Live annotated video preview.
+- Helmet and NoHelmet detection summaries.
+- Detection history and per-job results.
+- CSV, TXT, XML, JSON and PDF report exports.
+- SQLite local database with optional PostgreSQL/Neon support.
 
 ## Project Structure
 
 ```text
 HelmetComplianceCounter/
-├── code/
-├── cleaned_dataset/
-├── dataset_split/
-├── data/
-├── documentation/
-├── runs/
-├── templates/
-├── static/
-├── app.py
-└── yolov8n.pt
-```
-
-Large datasets, generated training artifacts, uploaded media and virtual environments are maintained locally rather than committed to the source repository.
-
-## Project Status
-
-Currently under active development. Detection, tracking, analytics, and frontend functionality are being improved through iterative testing on traffic footage.
+├── code/                  # Dataset audit and preparation scripts
+├── documentation/         # Project
