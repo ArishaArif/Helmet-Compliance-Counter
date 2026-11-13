@@ -65,7 +65,7 @@ if USE_PG:                                   # Neon (cloud Postgres)
     from psycopg.rows import dict_row
     from psycopg_pool import ConnectionPool
     POOL = ConnectionPool(DATABASE_URL, min_size=1, max_size=5, open=True,
-                          max_idle=30, kwargs={"row_factory": dict_row})
+                          max_idle=30, check=ConnectionPool.check_connection, kwargs={"row_factory": dict_row})
     UNIQUE_ERRORS = (psycopg.errors.UniqueViolation,)
 else:                                        # local fallback when DATABASE_URL is empty
     UNIQUE_ERRORS = (sqlite3.IntegrityError,)
