@@ -615,4 +615,5 @@ if __name__ == "__main__":
             c.execute("INSERT INTO users(email, pw, role) VALUES(?,?,'admin')", (email, generate_password_hash(pw)))
         sys.exit("Admin created.")
     threading.Thread(target=image_model, daemon=True).start()   # load the model now, not on the first upload
-    app.run(host="127.0.0.1", port=5000, debug=False, threaded=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=False, threaded=True)
