@@ -18,9 +18,9 @@
   .app { flex:1; min-height:0; display:grid; grid-template-columns:minmax(0,1fr) 350px; }
   .left { display:flex; flex-direction:column; min-height:0; border-right:1px solid var(--line); }
   #viewer { position:relative; flex:1; min-height:320px; background:#06080b; display:grid; place-items:center; overflow:hidden; }
-  #stage { width:100%; height:100%; display:grid; place-items:center; }
-  #stage img { max-width:100%; max-height:100%; object-fit:contain; }
-  #alert { position:absolute; top:0; left:0; right:0; background:var(--bad); font-weight:700; padding:6px 14px; display:none; }
+  #stage { position:absolute; inset:0; }
+  #stage img { display:block; width:100%; height:100%; object-fit:contain; }
+  #alert { position:absolute; z-index:2; top:0; left:0; right:0; background:var(--bad); font-weight:700; padding:6px 14px; display:none; }
   #empty { position:absolute; inset:0; display:grid; place-content:center; text-align:center; gap:14px; }
   #empty p { margin:0; color:var(--muted); } #empty div { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
   #thumbs { display:flex; gap:6px; padding:6px 10px; background:#0d1117; overflow-x:auto; }
@@ -46,7 +46,8 @@
   .tile.g b { color:var(--ok); } .tile.r b { color:var(--bad); }
   .split { display:flex; height:6px; background:#222a36; margin:8px 0; } .split i { display:block; transition:width .4s; }
   .strip { display:flex; flex-wrap:wrap; gap:3px; min-height:12px; } .strip i { width:11px; height:11px; } .strip .g { background:var(--ok); } .strip .r { background:var(--bad); }
-  #zoom { height:150px; background:#06080b; border:1px solid var(--line); display:grid; place-items:center; } #zoom img { max-height:100%; max-width:100%; }
+  #zoom { position:relative; height:150px; overflow:hidden; background:#06080b; border:1px solid var(--line); display:grid; place-items:center; }
+  #zoom img { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; }
   #zoomTag { margin-top:6px; padding:6px 10px; font-weight:700; text-align:center; background:#1b2230; }
   .res { display:flex; gap:10px; align-items:center; padding:6px 8px; margin-bottom:6px; background:#0b0f15; border-left:4px solid var(--ok); }
   .res.r { border-color:var(--bad); } .res img { width:40px; height:48px; object-fit:cover; background:#000; }
@@ -90,7 +91,7 @@
     <h2>COUNTS <span class="state" id="state"><i></i><span>READY</span></span></h2>
     <div class="tiles">
       <div class="tile"><p>TOTAL PEOPLE</p><b id="total">0</b></div>
-      <div class="tile y"><p>IN FRAME</p><b id="inframe">0</b></div>
+      <div class="tile y"><p id="inframeLbl">IN FRAME</p><b id="inframe">0</b></div>
       <div class="tile g"><p>HELMET</p><b id="helmet">0</b></div>
       <div class="tile r"><p>NO HELMET</p><b id="nohelmet">0</b></div>
     </div>
@@ -142,7 +143,10 @@ function render() {
   const c = last.counts, j = last.job, running = j.status === 'running';
   $('empty').style.display = 'none';
   $('total').textContent = c.total; $('helmet').textContent = c.helmet; $('nohelmet').textContent = c.no_helmet;
-  $('inframe').textContent = running ? last.in_frame : 0;
+  const isImg = j.kind !== 'video', pic = imgIdx + 1;
+  const inPic = isImg ? last.detections.filter(d => d.crop.startsWith('img' + pic + '_')) : [];
+  $('inframe').textContent = isImg ? inPic.length : (running ? last.in_frame : 0);
+  $('inframeLbl').textContent = isImg && last.annotated.length > 1 ? 'IN PICTURE ' + pic + '/' + last.annotated.length : (isImg ? 'IN PICTURE' : 'IN FRAME');
   $('comp').textContent = c.compliance === null ? '-' : c.compliance + '%';
   $('sOk').style.width = c.total ? (100 * c.helmet / c.total) + '%' : '0';
   $('sBad').style.width = c.total ? (100 * c.no_helmet / c.total) + '%' : '0';
@@ -165,7 +169,8 @@ function render() {
 
   const cls = $('cls').value, dets = last.detections.filter(d => cls === 'all' || d.label === cls);
   $('strip').innerHTML = last.detections.slice(-60).map(d => `<i class="${d.label === 'Helmet' ? 'g' : 'r'}"></i>`).join('');
-  const lastD = dets[dets.length - 1];
+  const zd = isImg ? inPic.filter(d => cls === 'all' || d.label === cls) : dets, lastD = zd[zd.length - 1];
+  if (!lastD) { $('zoom').innerHTML = '<p class="none">' + (isImg ? 'No people in this picture.' : 'Latest person appears here.') + '</p>'; $('zoomTag').hidden = true; $('zoomMeta').textContent = ''; }
   if (lastD) {
     $('zoom').innerHTML = `<img alt="Latest person" src="/media/${jobId}/crops/${esc(lastD.crop)}?t=${lastD.track_id}">`;
     $('zoomTag').hidden = false; $('zoomTag').textContent = lastD.label === 'Helmet' ? 'HELMET' : 'NO HELMET';
