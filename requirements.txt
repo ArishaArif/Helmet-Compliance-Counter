@@ -1,6 +1,5 @@
 flask
 ultralytics
-opencv-python
 pillow
 numpy
 reportlab
