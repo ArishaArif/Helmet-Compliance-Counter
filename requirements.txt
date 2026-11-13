@@ -1,9 +1,8 @@
 flask
-ultralytics
+ultralytics-opencv-headless
 pillow
 numpy
 reportlab
 python-dotenv
 psycopg[binary]
 psycopg_pool
-opencv-python-headless
