@@ -195,5 +195,4 @@ Open `http://127.0.0.1:5000` in your browser.
 See `documentation/PROJECT_TECHNICAL_REPORT.md` for dataset auditing, cleaning decisions, model training, evaluation comparisons, technical decisions and unresolved issues.
 
 ## Project Status
-
 The Flask application, dataset preparation pipeline, model training and initial evaluations are implemented. CCTV fine-tuning has improved performance on the CCTV holdout set, but reliable helmet-status detection, stable tracking, video speed and production deployment remain areas for further work.
